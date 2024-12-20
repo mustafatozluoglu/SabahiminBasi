@@ -9,8 +9,11 @@ public struct ZikirDetailView: View {
     @State private var editedDescription = ""
     @State private var editedTargetCount: Int = 0
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled: Bool = true
+    @AppStorage("timerInterval") private var timerInterval: Double = 1.0
+    @AppStorage("timerEnabled") private var timerEnabled: Bool = true
     private let feedbackCounterGenerator = UIImpactFeedbackGenerator(style: .light)
     private let feedbackCompleteGenerator = UIImpactFeedbackGenerator(style: .heavy)
+    @State private var timer: Timer? = nil
     
     public init(viewModel: ZikirDetailViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -52,6 +55,20 @@ public struct ZikirDetailView: View {
                             .foregroundColor(.white)
                             .font(.title2)
                     )
+            }
+            .onAppear {
+                if timerEnabled {
+                    timer = Timer.scheduledTimer(withTimeInterval: timerInterval, repeats: true) { _ in
+                        viewModel.incrementCount()
+                        if hapticFeedbackEnabled {
+                            feedbackCounterGenerator.impactOccurred()
+                        }
+                    }
+                }
+            }
+            .onDisappear {
+                timer?.invalidate()
+                timer = nil
             }
             
             Button("Sıfırla") {
