@@ -6,12 +6,16 @@ public struct ZikirRowView: View {
     public var body: some View {
         HStack {
             VStack(alignment: .center) {
-                Text("\(zikir.targetCount)")
+                Text("\(formatNumber(zikir.targetCount))")
                     .font(.title2)
                     .foregroundColor(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
                 Text("\(zikir.count)")
                     .font(.caption)
                     .foregroundColor(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
             }
             .frame(width: 50)
             .padding(8)
@@ -30,5 +34,11 @@ public struct ZikirRowView: View {
             }
         }
         .padding(.vertical, 4)
+    }
+    
+    private func formatNumber(_ number: Int) -> String {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        return numberFormatter.string(from: NSNumber(value: number)) ?? "\(number)"
     }
 }
