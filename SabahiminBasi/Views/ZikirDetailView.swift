@@ -20,25 +20,28 @@ public struct ZikirDetailView: View {
     }
     
     public var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
             Text(viewModel.zikir.name)
-                .font(.title)
+                .font(.system(size: 20, weight: .heavy))
             
             Text(viewModel.zikir.description)
+                .font(.system(size: 12, weight: .heavy))
                 .foregroundColor(.gray)
             
-            VStack(spacing: 8) {
+            VStack(spacing: 6) {
                 Text("\(viewModel.zikir.count)")
-                    .font(.system(size: 72, weight: .bold))
+                    .font(.system(size: 64, weight: .bold))
                 
                 Text("Hedef: \(viewModel.zikir.targetCount)")
                     .foregroundColor(.gray)
+                    .font(.system(size: 18, weight: .heavy))
                     .onTapGesture {
                         showingTargetEdit = true
                     }
                 
                 Text("Tamamlama: \(viewModel.zikir.completions)")
                     .foregroundColor(.green)
+                    .font(.system(size: 12, weight: .heavy))
             }
             
             Button(action: {
@@ -49,7 +52,7 @@ public struct ZikirDetailView: View {
             }) {
                 Circle()
                     .fill(Color.orange)
-                    .frame(width: 250, height: 250)
+                    .frame(width: 200, height: 200)
                     .overlay(
                         Text("Sayaç")
                             .foregroundColor(.white)
@@ -92,6 +95,7 @@ public struct ZikirDetailView: View {
                 showingEditZikir = true
             }) {
                 Label("Düzenle", systemImage: "pencil")
+                    .font(.system(size: 14, weight: .heavy))
             }
             .padding()
         }

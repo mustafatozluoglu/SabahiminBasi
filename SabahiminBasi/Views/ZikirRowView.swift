@@ -11,7 +11,7 @@ public struct ZikirRowView: View {
                     .foregroundColor(.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
-                Text("\(zikir.count)")
+                Text("\(formatNumber(zikir.count))")
                     .font(.caption)
                     .foregroundColor(.white)
                     .lineLimit(1)
