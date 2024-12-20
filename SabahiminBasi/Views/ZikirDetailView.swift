@@ -8,6 +8,7 @@ public struct ZikirDetailView: View {
     @State private var editedName = ""
     @State private var editedDescription = ""
     @State private var editedTargetCount: Int = 0
+    @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled: Bool = true
     private let feedbackCounterGenerator = UIImpactFeedbackGenerator(style: .light)
     private let feedbackCompleteGenerator = UIImpactFeedbackGenerator(style: .heavy)
     
@@ -39,7 +40,9 @@ public struct ZikirDetailView: View {
             
             Button(action: {
                 viewModel.incrementCount()
-                feedbackCounterGenerator.impactOccurred()
+                if hapticFeedbackEnabled {
+                    feedbackCounterGenerator.impactOccurred()
+                }
             }) {
                 Circle()
                     .fill(Color.orange)
@@ -53,7 +56,9 @@ public struct ZikirDetailView: View {
             
             Button("Sıfırla") {
                 viewModel.resetCount()
-                feedbackCompleteGenerator.impactOccurred()
+                if hapticFeedbackEnabled {
+                    feedbackCompleteGenerator.impactOccurred()
+                }
             }
             .padding()
             
@@ -75,7 +80,9 @@ public struct ZikirDetailView: View {
         }
         .padding()
         .onChange(of: viewModel.isCompleted) {
-            feedbackCompleteGenerator.impactOccurred()
+            if hapticFeedbackEnabled {
+                feedbackCompleteGenerator.impactOccurred()
+            }
             viewModel.isCompleted = false
         }
         .sheet(isPresented: $showingEditZikir) {

@@ -3,6 +3,7 @@ import SwiftUI
 public struct ZikirListView: View {
     @StateObject private var viewModel: ZikirListViewModel
     @State private var showingAddZikir = false
+    @State private var showingSettings = false
     
     public init(viewModel: ZikirListViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -24,6 +25,11 @@ public struct ZikirListView: View {
                     }
                 }
                 .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: { showingSettings = true }) {
+                            Image(systemName: "gearshape.fill")
+                        }
+                    }
                     ToolbarItem(placement: .principal) { // Center title with an icon
                         HStack {
                             Image(systemName: "list.bullet")
@@ -41,6 +47,9 @@ public struct ZikirListView: View {
                     AddZikirView { name, description, targetCount in
                         viewModel.add(name: name, description: description, targetCount: targetCount)
                     }
+                }
+                .sheet(isPresented: $showingSettings) {
+                    SettingsView()
                 }
             }
             .onAppear {
