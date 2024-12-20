@@ -7,7 +7,7 @@ public struct AddZikirView: View {
     @State private var description = ""
     @State private var targetCount: Int = 0
     let onAdd: (String, String, Int) -> Void
-    private let feedbackGenerator = UIImpactFeedbackGenerator(style: .medium) // Add this line
+    private let feedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
     
     public var body: some View {
         NavigationView {
@@ -30,7 +30,7 @@ public struct AddZikirView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Kaydet") {
                         onAdd(name, description, targetCount)
-                        feedbackGenerator.impactOccurred() // Add this line
+                        feedbackGenerator.impactOccurred()
                         dismiss()
                     }
                     .disabled(name.isEmpty || targetCount <= 0)

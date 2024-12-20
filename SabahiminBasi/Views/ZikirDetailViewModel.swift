@@ -3,7 +3,7 @@ import Combine
 
 public class ZikirDetailViewModel: ObservableObject {
     @Published public var zikir: Zikir
-    @Published public var showCompletionAlert = false
+    @Published public var isCompleted = false
     private let repository: ZikirRepository
     
     public init(zikir: Zikir, repository: ZikirRepository) {
@@ -18,7 +18,7 @@ public class ZikirDetailViewModel: ObservableObject {
         if newCount == zikir.targetCount {
             newCount = 0
             newCompletions += 1
-            showCompletionAlert = true
+            isCompleted = true
         }
         
         zikir = Zikir(

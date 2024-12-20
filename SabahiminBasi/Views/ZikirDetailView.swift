@@ -7,7 +7,9 @@ public struct ZikirDetailView: View {
     @State private var showingEditZikir = false
     @State private var editedName = ""
     @State private var editedDescription = ""
-    @State private var editedTargetCount: Int = 0  // Change to Int instead of String
+    @State private var editedTargetCount: Int = 0
+    private let feedbackCounterGenerator = UIImpactFeedbackGenerator(style: .light)
+    private let feedbackCompleteGenerator = UIImpactFeedbackGenerator(style: .heavy)
     
     public init(viewModel: ZikirDetailViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -35,7 +37,10 @@ public struct ZikirDetailView: View {
                     .foregroundColor(.green)
             }
             
-            Button(action: { viewModel.incrementCount() }) {
+            Button(action: {
+                viewModel.incrementCount()
+                feedbackCounterGenerator.impactOccurred()
+            }) {
                 Circle()
                     .fill(Color.orange)
                     .frame(width: 250, height: 250)
@@ -48,6 +53,7 @@ public struct ZikirDetailView: View {
             
             Button("Sıfırla") {
                 viewModel.resetCount()
+                feedbackCompleteGenerator.impactOccurred()
             }
             .padding()
             
@@ -68,10 +74,9 @@ public struct ZikirDetailView: View {
             .padding()
         }
         .padding()
-        .alert("Hedefe Ulaştınız!", isPresented: $viewModel.showCompletionAlert) {
-            Button("Devam", role: .cancel) { }
-        } message: {
-            Text("\(viewModel.zikir.completions).kez Tamamladınız.")
+        .onChange(of: viewModel.isCompleted) {
+            feedbackCompleteGenerator.impactOccurred()
+            viewModel.isCompleted = false
         }
         .sheet(isPresented: $showingEditZikir) {
             NavigationView {
@@ -93,6 +98,7 @@ public struct ZikirDetailView: View {
                             if editedTargetCount > 0 {  // Check if target count is greater than 0
                                 viewModel.updateZikir(name: editedName, description: editedDescription, targetCount: editedTargetCount)
                                 viewModel.resetCount()
+                                feedbackCompleteGenerator.impactOccurred()
                                 showingEditZikir = false
                             }
                         }
