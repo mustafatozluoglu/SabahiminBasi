@@ -1,26 +1,48 @@
 import SwiftUI
 
-struct ZikirRowView: View {
-    let zikir: Zikir
+public struct ZikirListView: View {
+    @StateObject private var viewModel: ZikirListViewModel
+    @State private var showingAddZikir = false
     
-    var body: some View {
-        HStack {
-            Text("\(zikir.count)")
-                .font(.title2)
-                .frame(width: 50)
-                .foregroundColor(.white)
-                .padding(8)
-                .background(Color.gray)
-                .cornerRadius(8)
-            
-            VStack(alignment: .leading) {
-                Text(zikir.name)
-                    .font(.headline)
-                Text(zikir.description)
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+    public init(viewModel: ZikirListViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
+    
+    public var body: some View {
+        NavigationView {
+            List {
+                ForEach(viewModel.zikirs) { zikir in
+                    NavigationLink(destination: makeDetailView(for: zikir)) {
+                        ZikirRowView(zikir: zikir)
+                    }
+                }
+                .onDelete { indexSet in
+                    indexSet.forEach { index in
+                        viewModel.delete(viewModel.zikirs[index])
+                    }
+                }
+            }
+            .navigationTitle("My List")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { showingAddZikir = true }) {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
+            .sheet(isPresented: $showingAddZikir) {
+                AddZikirView { name, description, targetCount in
+                    viewModel.add(name: name, description: description, targetCount: targetCount)
+                }
             }
         }
-        .padding(.vertical, 4)
+        .onAppear {
+            viewModel.load()
+        }
+    }
+    
+    private func makeDetailView(for zikir: Zikir) -> some View {
+        let detailViewModel = ZikirDetailViewModel(zikir: zikir, repository: viewModel.repository)
+        return ZikirDetailView(viewModel: detailViewModel)
     }
 }
