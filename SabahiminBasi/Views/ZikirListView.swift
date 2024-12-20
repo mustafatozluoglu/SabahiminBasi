@@ -11,46 +11,44 @@ public struct ZikirListView: View {
     
     public var body: some View {
         NavigationView {
-            NavigationView {
-                List {
-                    ForEach(viewModel.zikirs) { zikir in
-                        NavigationLink(destination: makeDetailView(for: zikir)) {
-                            ZikirRowView(zikir: zikir)
-                        }
-                    }
-                    .onDelete { indexSet in
-                        indexSet.forEach { index in
-                            viewModel.delete(viewModel.zikirs[index])
-                        }
+            List {
+                ForEach(viewModel.zikirs) { zikir in
+                    NavigationLink(destination: makeDetailView(for: zikir)) {
+                        ZikirRowView(zikir: zikir)
                     }
                 }
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button(action: { showingSettings = true }) {
-                            Image(systemName: "gearshape.fill")
-                        }
-                    }
-                    ToolbarItem(placement: .principal) {
-                        HStack {
-                            Image(systemName: "list.bullet")
-                            Text("Zikir Listem")
-                                .font(.headline)
-                        }
-                    }
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: { showingAddZikir = true }) {
-                            Image(systemName: "plus")
-                        }
+                .onDelete { indexSet in
+                    indexSet.forEach { index in
+                        viewModel.delete(viewModel.zikirs[index])
                     }
                 }
-                .sheet(isPresented: $showingAddZikir) {
-                    AddZikirView { name, description, targetCount in
-                        viewModel.add(name: name, description: description, targetCount: targetCount)
+            }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { showingSettings = true }) {
+                        Image(systemName: "gearshape.fill")
                     }
                 }
-                .sheet(isPresented: $showingSettings) {
-                    SettingsView()
+                ToolbarItem(placement: .principal) {
+                    HStack {
+                        Image(systemName: "list.bullet")
+                        Text("Zikir Listem")
+                            .font(.headline)
+                    }
                 }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { showingAddZikir = true }) {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
+            .sheet(isPresented: $showingAddZikir) {
+                AddZikirView { name, description, targetCount in
+                    viewModel.add(name: name, description: description, targetCount: targetCount)
+                }
+            }
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
             }
             .onAppear {
                 viewModel.load()
