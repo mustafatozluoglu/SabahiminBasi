@@ -30,7 +30,7 @@ public struct ZikirListView: View {
                             Image(systemName: "gearshape.fill")
                         }
                     }
-                    ToolbarItem(placement: .principal) { // Center title with an icon
+                    ToolbarItem(placement: .principal) {
                         HStack {
                             Image(systemName: "list.bullet")
                             Text("Zikir Listem")

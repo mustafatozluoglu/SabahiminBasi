@@ -20,117 +20,125 @@ public struct ZikirDetailView: View {
     }
     
     public var body: some View {
-        VStack(spacing: 16) {
-            Text(viewModel.zikir.name)
-                .font(.system(size: 20, weight: .heavy))
-            
-            Text(viewModel.zikir.description)
-                .font(.system(size: 12, weight: .heavy))
-                .foregroundColor(.gray)
-            
-            VStack(spacing: 6) {
-                Text("\(viewModel.zikir.count)")
-                    .font(.system(size: 64, weight: .bold))
+        ScrollView {
+            VStack(spacing: 16) {
+                Text(viewModel.zikir.name)
+                    .font(.system(size: 20, weight: .heavy))
+                    .lineLimit(nil)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
                 
-                Text("Hedef: \(viewModel.zikir.targetCount)")
-                    .foregroundColor(.gray)
-                    .font(.system(size: 18, weight: .heavy))
-                    .onTapGesture {
-                        showingTargetEdit = true
-                    }
-                
-                Text("Tamamlama: \(viewModel.zikir.completions)")
-                    .foregroundColor(.green)
+                Text(viewModel.zikir.description)
                     .font(.system(size: 12, weight: .heavy))
-            }
-            
-            Button(action: {
-                viewModel.incrementCount()
-                if hapticFeedbackEnabled {
-                    feedbackCounterGenerator.impactOccurred()
+                    .foregroundColor(.gray)
+                    .lineLimit(nil)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                
+                VStack(spacing: 6) {
+                    Text("\(viewModel.zikir.count)")
+                        .font(.system(size: 64, weight: .bold))
+                    
+                    Text("Hedef: \(viewModel.zikir.targetCount)")
+                        .foregroundColor(.gray)
+                        .font(.system(size: 18, weight: .heavy))
+                        .onTapGesture {
+                            showingTargetEdit = true
+                        }
+                    
+                    Text("Tamamlama: \(viewModel.zikir.completions)")
+                        .foregroundColor(.green)
+                        .font(.system(size: 12, weight: .heavy))
                 }
-            }) {
-                Circle()
-                    .fill(Color.orange)
-                    .frame(width: 200, height: 200)
-                    .overlay(
-                        Text("Sayaç")
-                            .foregroundColor(.white)
-                            .font(.title2)
-                    )
-            }
-            .onAppear {
-                if timerEnabled {
-                    timer = Timer.scheduledTimer(withTimeInterval: timerInterval, repeats: true) { _ in
-                        viewModel.incrementCount()
-                        if hapticFeedbackEnabled {
-                            feedbackCounterGenerator.impactOccurred()
+                
+                Button(action: {
+                    viewModel.incrementCount()
+                    if hapticFeedbackEnabled {
+                        feedbackCounterGenerator.impactOccurred()
+                    }
+                }) {
+                    Circle()
+                        .fill(Color.orange)
+                        .frame(width: 200, height: 200)
+                        .overlay(
+                            Text("Sayaç")
+                                .foregroundColor(.white)
+                                .font(.title2)
+                        )
+                }
+                .onAppear {
+                    if timerEnabled {
+                        timer = Timer.scheduledTimer(withTimeInterval: timerInterval, repeats: true) { _ in
+                            viewModel.incrementCount()
+                            if hapticFeedbackEnabled {
+                                feedbackCounterGenerator.impactOccurred()
+                            }
                         }
                     }
                 }
+                .onDisappear {
+                    timer?.invalidate()
+                    timer = nil
+                }
+                
+                Button("Sıfırla") {
+                    viewModel.resetCount()
+                    if hapticFeedbackEnabled {
+                        feedbackCompleteGenerator.impactOccurred()
+                    }
+                }
+                .padding()
+                
+                ProgressView(
+                    value: Double(viewModel.zikir.count),
+                    total: Double(viewModel.zikir.targetCount)
+                )
+                .padding(.horizontal)
+                
+                Button(action: {
+                    editedName = viewModel.zikir.name
+                    editedDescription = viewModel.zikir.description
+                    editedTargetCount = viewModel.zikir.targetCount
+                    showingEditZikir = true
+                }) {
+                    Label("Düzenle", systemImage: "pencil")
+                        .font(.system(size: 14, weight: .heavy))
+                }
+                .padding()
             }
-            .onDisappear {
-                timer?.invalidate()
-                timer = nil
-            }
-            
-            Button("Sıfırla") {
-                viewModel.resetCount()
+            .padding()
+            .onChange(of: viewModel.isCompleted) {
                 if hapticFeedbackEnabled {
                     feedbackCompleteGenerator.impactOccurred()
                 }
+                viewModel.isCompleted = false
             }
-            .padding()
-            
-            ProgressView(
-                value: Double(viewModel.zikir.count),
-                total: Double(viewModel.zikir.targetCount)
-            )
-            .padding(.horizontal)
-            
-            Button(action: {
-                editedName = viewModel.zikir.name
-                editedDescription = viewModel.zikir.description
-                editedTargetCount = viewModel.zikir.targetCount
-                showingEditZikir = true
-            }) {
-                Label("Düzenle", systemImage: "pencil")
-                    .font(.system(size: 14, weight: .heavy))
-            }
-            .padding()
-        }
-        .padding()
-        .onChange(of: viewModel.isCompleted) {
-            if hapticFeedbackEnabled {
-                feedbackCompleteGenerator.impactOccurred()
-            }
-            viewModel.isCompleted = false
-        }
-        .sheet(isPresented: $showingEditZikir) {
-            NavigationView {
-                Form {
-                    TextField("Zikir Adı", text: $editedName)
-                    TextField("Açıklama", text: $editedDescription)
-                    TextField("Hedef Sayısı", value: $editedTargetCount, formatter: NumberFormatter())
-                        .keyboardType(.numberPad)
-                }
-                .navigationTitle("Zikir Düzenle")
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Vazgeç") {
-                            showingEditZikir = false
-                        }
+            .sheet(isPresented: $showingEditZikir) {
+                NavigationView {
+                    Form {
+                        TextField("Zikir Adı", text: $editedName)
+                        TextField("Açıklama", text: $editedDescription)
+                        TextField("Hedef Sayısı", value: $editedTargetCount, formatter: NumberFormatter())
+                            .keyboardType(.numberPad)
                     }
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Kaydet") {
-                            if editedTargetCount > 0 {  // Check if target count is greater than 0
-                                viewModel.updateZikir(name: editedName, description: editedDescription, targetCount: editedTargetCount)
-                                viewModel.resetCount()
-                                feedbackCompleteGenerator.impactOccurred()
+                    .navigationTitle("Zikir Düzenle")
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button("Vazgeç") {
                                 showingEditZikir = false
                             }
                         }
-                        .disabled(editedName.isEmpty || editedTargetCount <= 0)  // Disable if target count is 0 or invalid
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Kaydet") {
+                                if editedTargetCount > 0 {  // Check if target count is greater than 0
+                                    viewModel.updateZikir(name: editedName, description: editedDescription, targetCount: editedTargetCount)
+                                    viewModel.resetCount()
+                                    feedbackCompleteGenerator.impactOccurred()
+                                    showingEditZikir = false
+                                }
+                            }
+                            .disabled(editedName.isEmpty || editedTargetCount <= 0)  // Disable if target count is 0 or invalid
+                        }
                     }
                 }
             }
