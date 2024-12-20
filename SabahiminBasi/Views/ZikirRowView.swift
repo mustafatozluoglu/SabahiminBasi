@@ -24,7 +24,7 @@ public struct ZikirRowView: View {
                 Text(zikir.description)
                     .font(.subheadline)
                     .foregroundColor(.gray)
-                Text("Completed \(zikir.completions) times")
+                Text("\(zikir.completions). kez tamamlandı.")
                     .font(.caption)
                     .foregroundColor(.green)
             }

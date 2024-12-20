@@ -10,34 +10,42 @@ public struct ZikirListView: View {
     
     public var body: some View {
         NavigationView {
-            List {
-                ForEach(viewModel.zikirs) { zikir in
-                    NavigationLink(destination: makeDetailView(for: zikir)) {
-                        ZikirRowView(zikir: zikir)
+            NavigationView {
+                List {
+                    ForEach(viewModel.zikirs) { zikir in
+                        NavigationLink(destination: makeDetailView(for: zikir)) {
+                            ZikirRowView(zikir: zikir)
+                        }
+                    }
+                    .onDelete { indexSet in
+                        indexSet.forEach { index in
+                            viewModel.delete(viewModel.zikirs[index])
+                        }
                     }
                 }
-                .onDelete { indexSet in
-                    indexSet.forEach { index in
-                        viewModel.delete(viewModel.zikirs[index])
+                .toolbar {
+                    ToolbarItem(placement: .principal) { // Center title with an icon
+                        HStack {
+                            Image(systemName: "list.bullet")
+                            Text("Zikir Listem")
+                                .font(.headline)
+                        }
+                    }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: { showingAddZikir = true }) {
+                            Image(systemName: "plus")
+                        }
+                    }
+                }
+                .sheet(isPresented: $showingAddZikir) {
+                    AddZikirView { name, description, targetCount in
+                        viewModel.add(name: name, description: description, targetCount: targetCount)
                     }
                 }
             }
-            .navigationTitle("My List")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingAddZikir = true }) {
-                        Image(systemName: "plus")
-                    }
-                }
+            .onAppear {
+                viewModel.load()
             }
-            .sheet(isPresented: $showingAddZikir) {
-                AddZikirView { name, description, targetCount in
-                    viewModel.add(name: name, description: description, targetCount: targetCount)
-                }
-            }
-        }
-        .onAppear {
-            viewModel.load()
         }
     }
     

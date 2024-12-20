@@ -10,30 +10,36 @@ public struct AddZikirView: View {
     public var body: some View {
         NavigationView {
             Form {
-                TextField("Zikir Name", text: $name)
-                TextField("Description", text: $description)
-                TextField("Target Count", text: Binding(
+                TextField("Zikir Adı", text: $name)
+                TextField("Açıklama", text: $description)
+                TextField("Hedef Sayaç", text: Binding(
                         get: { String(targetCount) }, // Convert Int to String for TextField
                         set: { targetCount = Int($0) ?? 0 } // Convert String to Int, default to 0 if invalid
                     ))
                     .keyboardType(.numberPad)
             }
-            .navigationTitle("Add New Zikir")
+            .navigationTitle("Yeni Zikir Ekle")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("Vazgeç") {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button("Kaydet") {
                         onAdd(name, description, targetCount)
-                        
                         dismiss()
                     }
-                    .disabled(name.isEmpty)
+                    .disabled(name.isEmpty || targetCount <= 0)
                 }
             }
         }
+    }
+}
+
+#Preview {
+    AddZikirView { name, description, count in
+        // Preview callback - no implementation needed
+        print("Name: \(name), Description: \(description), Count: \(count)")
     }
 }

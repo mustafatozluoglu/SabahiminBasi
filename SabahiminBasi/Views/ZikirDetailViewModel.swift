@@ -58,4 +58,17 @@ public class ZikirDetailViewModel: ObservableObject {
         )
         repository.update(zikir)
     }
+    
+    public func updateZikir(name: String, description: String, targetCount: Int) {
+        zikir = Zikir(
+            id: zikir.id,
+            name: name,
+            description: description,
+            count: zikir.count,
+            targetCount: targetCount,
+            completions: zikir.completions,
+            createdAt: zikir.createdAt
+        )
+        repository.update(zikir)
+    }
 }
