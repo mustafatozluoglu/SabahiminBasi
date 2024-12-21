@@ -3,7 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
     @AppStorage("timerInterval") private var timerInterval: Double = 1.0
-    @AppStorage("timerEnabled") private var timerEnabled: Bool = true
+    @AppStorage("timerEnabled") private var timerEnabled: Bool = false
     
     var body: some View {
         NavigationView {

@@ -10,7 +10,7 @@ public struct ZikirDetailView: View {
     @State private var editedTargetCount: Int = 0
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled: Bool = true
     @AppStorage("timerInterval") private var timerInterval: Double = 1.0
-    @AppStorage("timerEnabled") private var timerEnabled: Bool = true
+    @AppStorage("timerEnabled") private var timerEnabled: Bool = false
     private let feedbackCounterGenerator = UIImpactFeedbackGenerator(style: .light)
     private let feedbackCompleteGenerator = UIImpactFeedbackGenerator(style: .heavy)
     @State private var timer: Timer? = nil
