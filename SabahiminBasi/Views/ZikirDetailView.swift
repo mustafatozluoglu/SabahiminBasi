@@ -119,11 +119,11 @@ public struct ZikirDetailView: View {
                         Text("Zikir Adı")
                             .font(.system(size: 16, weight: .bold))
                         TextEditor(text: $editedName)
-                            .frame(minHeight: 40)
+                            .frame(minHeight: max(40, CGFloat(editedDescription.count / 2)))
                         Text("Açıklama")
                             .font(.system(size: 16, weight: .bold))
                         TextEditor(text: $editedDescription)
-                            .frame(minHeight: 40)
+                            .frame(minHeight: max(40, CGFloat(editedDescription.count / 2)))
                         TextField("Hedef Sayısı", value: $editedTargetCount, formatter: NumberFormatter())
                             .keyboardType(.numberPad)
                     }
