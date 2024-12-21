@@ -116,8 +116,14 @@ public struct ZikirDetailView: View {
             .sheet(isPresented: $showingEditZikir) {
                 NavigationView {
                     Form {
-                        TextField("Zikir Adı", text: $editedName)
-                        TextField("Açıklama", text: $editedDescription)
+                        Text("Zikir Adı")
+                            .font(.system(size: 16, weight: .bold))
+                        TextEditor(text: $editedName)
+                            .frame(minHeight: 40)
+                        Text("Açıklama")
+                            .font(.system(size: 16, weight: .bold))
+                        TextEditor(text: $editedDescription)
+                            .frame(minHeight: 40)
                         TextField("Hedef Sayısı", value: $editedTargetCount, formatter: NumberFormatter())
                             .keyboardType(.numberPad)
                     }

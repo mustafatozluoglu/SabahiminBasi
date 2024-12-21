@@ -12,9 +12,17 @@ public struct AddZikirView: View {
     public var body: some View {
         NavigationView {
             Form {
-                TextField("Zikir Adı", text: $name)
-                TextField("Açıklama", text: $description)
-                TextField("Hedef Sayaç", text: Binding(
+                Text("Zikir Adı")
+                    .font(.system(size: 16, weight: .bold))
+                TextEditor(text: $name)
+                    .frame(minHeight: 40)
+                Text("Açıklama")
+                    .font(.system(size: 16, weight: .bold))
+                TextEditor(text: $description)
+                    .frame(minHeight: 40)
+                Text("Hedef Sayaç")
+                    .font(.system(size: 16, weight: .bold))
+                TextEditor(text: Binding(
                         get: { String(targetCount) }, // Convert Int to String for TextField
                         set: { targetCount = Int($0) ?? 0 } // Convert String to Int, default to 0 if invalid
                     ))
