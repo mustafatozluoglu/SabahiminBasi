@@ -138,7 +138,6 @@ public struct ZikirDetailView: View {
                             Button("Kaydet") {
                                 if editedTargetCount > 0 {  // Check if target count is greater than 0
                                     viewModel.updateZikir(name: editedName, description: editedDescription, targetCount: editedTargetCount)
-                                    viewModel.resetCount()
                                     feedbackCompleteGenerator.impactOccurred()
                                     showingEditZikir = false
                                 }
