@@ -1,47 +1,38 @@
 import SwiftUI
-import UIKit // Add this import
+import UIKit
 
 public struct AddZikirView: View {
     @Environment(\.dismiss) var dismiss
     @State private var name = ""
     @State private var description = ""
-    @State private var targetCount: Int = 0
+    @State private var targetCount: String = ""
     let onAdd: (String, String, Int) -> Void
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
     
     public var body: some View {
         NavigationView {
             Form {
-                Text("Zikir Adı")
-                    .font(.system(size: 16, weight: .bold))
-                TextEditor(text: $name)
-                    .frame(minHeight: 40)
-                Text("Açıklama")
-                    .font(.system(size: 16, weight: .bold))
-                TextEditor(text: $description)
-                    .frame(minHeight: 40)
-                Text("Hedef Sayaç")
-                    .font(.system(size: 16, weight: .bold))
-                TextEditor(text: Binding(
-                        get: { String(targetCount) }, // Convert Int to String for TextField
-                        set: { targetCount = Int($0) ?? 0 } // Convert String to Int, default to 0 if invalid
-                    ))
-                    .keyboardType(.numberPad)
+                Section {
+                    TextField(LocalizedStringKey("enter_dhikr_name"), text: $name)
+                    TextField(LocalizedStringKey("enter_description"), text: $description)
+                    TextField(LocalizedStringKey("enter_target"), text: $targetCount)
+                        .keyboardType(.numberPad)
+                }
             }
-            .navigationTitle("Yeni Zikir Ekle")
+            .navigationTitle(LocalizedStringKey("new_dhikr"))
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Vazgeç") {
+                    Button(LocalizedStringKey("cancel")) {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Kaydet") {
-                        onAdd(name, description, targetCount)
+                    Button(LocalizedStringKey("save")) {
+                        onAdd(name, description, Int(targetCount) ?? 0)
                         feedbackGenerator.impactOccurred()
                         dismiss()
                     }
-                    .disabled(name.isEmpty || targetCount <= 0)
+                    .disabled(name.isEmpty || targetCount.isEmpty)
                 }
             }
         }

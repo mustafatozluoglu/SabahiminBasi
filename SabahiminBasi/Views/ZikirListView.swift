@@ -1,63 +1,100 @@
 import SwiftUI
+import CoreData
 
 public struct ZikirListView: View {
-    @StateObject private var viewModel: ZikirListViewModel
+    @Environment(\.managedObjectContext) private var viewContext
+    @FetchRequest(
+        entity: Zikir.entity(),
+        sortDescriptors: [NSSortDescriptor(keyPath: \Zikir.createdAt, ascending: true)],
+        animation: .default
+    ) private var zikirs: FetchedResults<Zikir>
     @State private var showingAddZikir = false
-    @State private var showingSettings = false
-    
-    public init(viewModel: ZikirListViewModel) {
-        _viewModel = StateObject(wrappedValue: viewModel)
-    }
+    @State private var selectedTab = 0
     
     public var body: some View {
-        NavigationView {
-            List {
-                ForEach(viewModel.zikirs) { zikir in
-                    NavigationLink(destination: makeDetailView(for: zikir)) {
-                        ZikirRowView(zikir: zikir)
+        TabView(selection: $selectedTab) {
+            // Zikirler Tab
+            NavigationView {
+                List {
+                    ForEach(zikirs) { zikir in
+                        NavigationLink(destination: makeDetailView(for: zikir)) {
+                            ZikirRowView(zikir: zikir)
+                        }
+                    }
+                    .onDelete(perform: deleteZikirs)
+                }
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: { showingAddZikir = true }) {
+                            Label(LocalizedStringKey("add_dhikr"), systemImage: "plus")
+                        }
                     }
                 }
-                .onDelete { indexSet in
-                    indexSet.forEach { index in
-                        viewModel.delete(viewModel.zikirs[index])
+                .sheet(isPresented: $showingAddZikir) {
+                    AddZikirView { name, description, targetCount in
+                        addZikir(name: name, description: description, targetCount: targetCount)
                     }
                 }
+                .navigationTitle(LocalizedStringKey("dhikr_list"))
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { showingSettings = true }) {
-                        Image(systemName: "gearshape.fill")
-                    }
-                }
-                ToolbarItem(placement: .principal) {
-                    HStack {
-                        Image(systemName: "list.bullet")
-                        Text("Zikir Listem")
-                            .font(.headline)
-                    }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingAddZikir = true }) {
-                        Image(systemName: "plus")
-                    }
-                }
+            .tabItem {
+                Label(LocalizedStringKey("dhikrs"), systemImage: "list.bullet")
             }
-            .sheet(isPresented: $showingAddZikir) {
-                AddZikirView { name, description, targetCount in
-                    viewModel.add(name: name, description: description, targetCount: targetCount)
-                }
+            .tag(0)
+            
+            // İstatistikler Tab
+            NavigationView {
+                StatisticsView(viewContext: viewContext)
             }
-            .sheet(isPresented: $showingSettings) {
+            .tabItem {
+                Label(LocalizedStringKey("statistics"), systemImage: "chart.bar.fill")
+            }
+            .tag(1)
+            
+            // Ayarlar Tab
+            NavigationView {
                 SettingsView()
+                    .navigationTitle(LocalizedStringKey("settings"))
             }
-            .onAppear {
-                viewModel.load()
+            .tabItem {
+                Label(LocalizedStringKey("settings"), systemImage: "gear")
             }
+            .tag(2)
         }
     }
     
     private func makeDetailView(for zikir: Zikir) -> some View {
-        let detailViewModel = ZikirDetailViewModel(zikir: zikir, repository: viewModel.repository)
-        return ZikirDetailView(viewModel: detailViewModel)
+        ZikirDetailView(viewModel: ZikirDetailViewModel(zikir: zikir, viewContext: viewContext))
+    }
+    
+    private func deleteZikirs(offsets: IndexSet) {
+        withAnimation {
+            offsets.map { zikirs[$0] }.forEach(viewContext.delete)
+            
+            do {
+                try viewContext.save()
+            } catch {
+                let nsError = error as NSError
+                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+            }
+        }
+    }
+    
+    private func addZikir(name: String, description: String, targetCount: Int) {
+        let newZikir = Zikir(context: viewContext)
+        newZikir.id = UUID()
+        newZikir.name = name
+        newZikir.zikirDescription = description
+        newZikir.targetCount = Int32(targetCount)
+        newZikir.count = 0
+        newZikir.completions = 0
+        newZikir.createdAt = Date()
+        
+        do {
+            try viewContext.save()
+        } catch {
+            let nsError = error as NSError
+            print("Error saving context: \(nsError), \(nsError.userInfo)")
+        }
     }
 }

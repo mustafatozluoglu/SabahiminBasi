@@ -4,41 +4,37 @@ public struct ZikirRowView: View {
     let zikir: Zikir
     
     public var body: some View {
-        HStack {
-            VStack(alignment: .center) {
-                Text("\(formatNumber(zikir.targetCount))")
-                    .font(.title2)
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-                Text("\(formatNumber(zikir.count))")
-                    .font(.caption)
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-            }
-            .frame(width: 50)
-            .padding(8)
-            .background(Color.gray)
-            .cornerRadius(8)
+        VStack(alignment: .leading, spacing: 8) {
+            Text(zikir.name ?? "")
+                .font(.headline)
             
-            VStack(alignment: .leading) {
-                Text(zikir.name)
-                    .font(.headline)
-                Text(zikir.description)
+            HStack {
+                Text(String(format: String(localized: "completion_progress_format"), zikir.count, zikir.targetCount))
                     .font(.subheadline)
-                    .foregroundColor(.gray)
-                Text("\(zikir.completions). kez tamamlandı.")
+                    .foregroundColor(.secondary)
+                
+                Spacer()
+                
+                Text(String(format: String(localized: "completion_count_format"), zikir.completions))
                     .font(.caption)
                     .foregroundColor(.green)
             }
+            
+            ProgressView(value: Double(zikir.count), total: Double(zikir.targetCount))
+                .progressViewStyle(LinearProgressViewStyle())
+                .tint(progressColor)
         }
         .padding(.vertical, 4)
     }
     
-    private func formatNumber(_ number: Int) -> String {
-        let numberFormatter = NumberFormatter()
-        numberFormatter.numberStyle = .decimal
-        return numberFormatter.string(from: NSNumber(value: number)) ?? "\(number)"
+    private var progressColor: Color {
+        let progress = Double(zikir.count) / Double(zikir.targetCount)
+        if progress >= 1.0 {
+            return .green
+        } else if progress >= 0.5 {
+            return .orange
+        } else {
+            return .blue
+        }
     }
 }

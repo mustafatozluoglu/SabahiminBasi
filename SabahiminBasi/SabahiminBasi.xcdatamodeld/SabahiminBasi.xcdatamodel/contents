@@ -10,4 +10,14 @@
         <attribute name="zikir_name" optional="YES" attributeType="String"/>
         <attribute name="zikir_target_count" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
+    <entity name="Zikir" representedClassName="Zikir" syncable="YES">
+        <attribute name="completions" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="count" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="lastCompletedDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="name" attributeType="String"/>
+        <attribute name="targetCount" attributeType="Integer 32" defaultValueString="33" usesScalarValueType="YES"/>
+        <attribute name="zikirDescription" attributeType="String"/>
+    </entity>
 </model>
