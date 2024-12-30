@@ -8,8 +8,15 @@ struct SettingsView: View {
     @AppStorage("timerEnabled") private var timerEnabled = false
     @AppStorage("timerInterval") private var timerInterval = 1.0
     @AppStorage("notificationsEnabled") private var notificationsEnabled = false
+    @AppStorage("selectedLanguage") private var selectedLanguage = "en"
     @State private var showingMailCompose = false
     @State private var showingSuccessAlert = false
+    @Environment(\.colorScheme) var colorScheme
+    
+    private let languages = [
+        "en": "English",
+        "tr": "Türkçe"
+    ]
     
     var body: some View {
         NavigationView {
@@ -17,10 +24,20 @@ struct SettingsView: View {
                 Section(header: Text(LocalizedStringKey("general"))) {
                     Toggle(LocalizedStringKey("dark_mode"), isOn: $isDarkMode)
                         .onChange(of: isDarkMode) { newValue in
-                            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                                windowScene.windows.first?.overrideUserInterfaceStyle = newValue ? .dark : .light
-                            }
+                            setAppearance(newValue)
                         }
+                    
+                    Picker(selection: $selectedLanguage) {
+                        ForEach(languages.sorted(by: { $0.value < $1.value }), id: \.key) { key, value in
+                            Text(value).tag(key)
+                        }
+                    } label: {
+                        Text(LocalizedStringKey("language"))
+                    }
+                    .onChange(of: selectedLanguage) { _ in
+                        UserDefaults.standard.set([selectedLanguage], forKey: "AppleLanguages")
+                        UserDefaults.standard.synchronize()
+                    }
                     
                     Toggle(LocalizedStringKey("haptic_feedback"), isOn: $hapticFeedbackEnabled)
                 }
@@ -71,6 +88,18 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showingMailCompose) {
                 MailComposeView(isShowing: $showingMailCompose, showSuccessAlert: $showingSuccessAlert)
+            }
+        }
+        .onAppear {
+            // Ensure the UI matches the stored dark mode setting
+            setAppearance(isDarkMode)
+        }
+    }
+    
+    private func setAppearance(_ isDark: Bool) {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            windowScene.windows.forEach { window in
+                window.overrideUserInterfaceStyle = isDark ? .dark : .light
             }
         }
     }

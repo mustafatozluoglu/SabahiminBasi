@@ -27,6 +27,11 @@
 "appearance" = "Appearance";
 "dark_mode" = "Dark Mode";
 "language" = "Language";
+"english" = "English";
+"french" = "French";
+"spanish" = "Spanish";
+"arabic" = "Arabic";
+"turkish" = "Turkish";
 "about" = "About";
 "version" = "Version";
 "feedback" = "Send Feedback";
@@ -80,3 +85,4 @@
 "zikir_detail" = "Dhikr Detail";
 "zikir_name" = "Dhikr Name";
 "enter_zikir_name" = "Enter dhikr name";
+"edit" = "Edit";

@@ -24,6 +24,10 @@ public class ZikirDetailViewModel: ObservableObject {
             }
             
             self.saveContext()
+            
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: NSManagedObjectContext.didSaveObjectsNotification, object: self.viewContext)
+            }
         }
     }
     

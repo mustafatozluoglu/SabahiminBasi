@@ -1,7 +1,7 @@
 import SwiftUI
 
 public struct ZikirRowView: View {
-    let zikir: Zikir
+    @ObservedObject var zikir: Zikir
     
     public var body: some View {
         VStack(alignment: .leading, spacing: 8) {

@@ -27,6 +27,10 @@
 "appearance" = "Görünüm";
 "dark_mode" = "Karanlık Mod";
 "language" = "Dil";
+"language_settings" = "Dil Ayarları";
+"select_language" = "Dil Seçin";
+"english" = "İngilizce";
+"turkish" = "Türkçe";
 "about" = "Hakkında";
 "version" = "Versiyon";
 "feedback" = "Geribildirim Gönder";
@@ -80,3 +84,4 @@
 "zikir_detail" = "Zikir Detayı";
 "zikir_name" = "Zikir Adı";
 "enter_zikir_name" = "Zikir adını girin";
+"edit" = "Düzenle";

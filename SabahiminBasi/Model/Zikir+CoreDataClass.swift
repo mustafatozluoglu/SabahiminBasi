@@ -1,5 +1,6 @@
 import Foundation
 import CoreData
+import SwiftUI
 
 @objc(Zikir)
 public class Zikir: NSManagedObject {
