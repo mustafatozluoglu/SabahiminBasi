@@ -21,65 +21,113 @@ struct SettingsView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text(LocalizedStringKey("general"))) {
-                    Toggle(LocalizedStringKey("dark_mode"), isOn: $darkModeEnabled)
-                        .onChange(of: darkModeEnabled) { newValue in
-                            setAppearance(newValue)
-                        }
-                    
-                    Picker(LocalizedStringKey("language"), selection: $languageManager.currentLanguage) {
-                        ForEach(languages.sorted(by: { $0.value < $1.value }), id: \.key) { key, value in
-                            Text(value).tag(key)
-                        }
-                    }
-                    .onChange(of: languageManager.currentLanguage) { newValue in
-                        languageManager.setLanguage(newValue)
-                        showingLanguageAlert = true
-                    }
-                    
-                    Toggle(LocalizedStringKey("haptic_feedback"), isOn: $hapticFeedbackEnabled)
-                }
-                
-                Section(header: Text(LocalizedStringKey("timer"))) {
-                    Toggle(LocalizedStringKey("timer_enabled"), isOn: $timerEnabled)
-                    
-                    if timerEnabled {
-                        HStack {
-                            Text(LocalizedStringKey("interval"))
-                            Spacer()
-                            Text(String(format: "%.1f", timerInterval))
-                        }
+            ScrollView {
+                VStack(spacing: 0) {
+                    settingsSection(header: LocalizedStringKey("general")) {
+                        Toggle(LocalizedStringKey("dark_mode"), isOn: $darkModeEnabled)
+                            .padding(.horizontal)
+                            .padding(.vertical, 12)
+                            .onChange(of: darkModeEnabled) { newValue in
+                                setAppearance(newValue)
+                            }
                         
-                        Slider(value: $timerInterval, in: 0.1...30.0, step: 0.1)
-                    }
-                }
-                
-                Section(header: Text(LocalizedStringKey("notifications"))) {
-                    Toggle(LocalizedStringKey("notifications_enabled"), isOn: $notificationsEnabled)
-                        .onChange(of: notificationsEnabled) { newValue in
-                            if newValue {
-                                requestNotificationPermission()
+                        Divider()
+                        
+                        HStack {
+                            Text(LocalizedStringKey("language"))
+                            Spacer()
+                            Menu {
+                                Button("English") {
+                                    languageManager.setLanguage("en")
+                                    showingLanguageAlert = true
+                                }
+                                Button("Türkçe") {
+                                    languageManager.setLanguage("tr")
+                                    showingLanguageAlert = true
+                                }
+                            } label: {
+                                HStack {
+                                    Text(languages[languageManager.currentLanguage] ?? "")
+                                        .foregroundColor(.secondary)
+                                    Image(systemName: "chevron.up.chevron.down")
+                                        .foregroundColor(.secondary)
+                                        .imageScale(.small)
+                                }
                             }
                         }
-                }
-                
-                Section(header: Text(LocalizedStringKey("about"))) {
-                    Button(action: {
-                        showingMailCompose = true
-                    }) {
-                        Text(LocalizedStringKey("send_feedback"))
+                        .padding(.horizontal)
+                        .padding(.vertical, 10)
+                        
+                        Divider()
+                        
+                        Toggle(LocalizedStringKey("haptic_feedback"), isOn: $hapticFeedbackEnabled)
+                            .padding(.horizontal)
+                            .padding(.vertical, 10)
                     }
                     
-                    HStack {
-                        Text(LocalizedStringKey("version"))
-                        Spacer()
-                        Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")
-                            .foregroundColor(.secondary)
+                    settingsSection(header: LocalizedStringKey("timer")) {
+                        Toggle(LocalizedStringKey("timer_enabled"), isOn: $timerEnabled)
+                            .padding(.horizontal)
+                            .padding(.vertical, 12)
+                        
+                        if timerEnabled {
+                            Divider()
+                            
+                            VStack(spacing: 8) {
+                                HStack {
+                                    Text(LocalizedStringKey("interval"))
+                                    Spacer()
+                                    Text(String(format: "%.1f", timerInterval))
+                                }
+                                
+                                Slider(value: $timerInterval, in: 0.1...30.0, step: 0.1)
+                            }
+                            .padding(.horizontal)
+                            .padding(.vertical, 12)
+                        }
+                    }
+                    
+                    settingsSection(header: LocalizedStringKey("notifications")) {
+                        Toggle(LocalizedStringKey("notifications_enabled"), isOn: $notificationsEnabled)
+                            .padding(.horizontal)
+                            .padding(.vertical, 12)
+                            .onChange(of: notificationsEnabled) { newValue in
+                                if newValue {
+                                    requestNotificationPermission()
+                                }
+                            }
+                    }
+                    
+                    settingsSection(header: LocalizedStringKey("about")) {
+                        Button(action: {
+                            showingMailCompose = true
+                        }) {
+                            HStack {
+                                Text(LocalizedStringKey("send_feedback"))
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.vertical, 12)
+                        
+                        Divider()
+                        
+                        HStack {
+                            Text(LocalizedStringKey("version"))
+                            Spacer()
+                            Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.horizontal)
+                        .padding(.vertical, 12)
                     }
                 }
+                .padding(.vertical)
             }
             .navigationTitle(LocalizedStringKey("settings"))
+            .background(Color(.systemGroupedBackground))
             .alert(LocalizedStringKey("language_changed"), isPresented: $showingLanguageAlert) {
                 Button(LocalizedStringKey("ok")) {}
             } message: {
@@ -97,6 +145,24 @@ struct SettingsView: View {
         .onAppear {
             // Ensure the UI matches the stored dark mode setting
             setAppearance(darkModeEnabled)
+        }
+    }
+    
+    private func settingsSection<Content: View>(header: LocalizedStringKey, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(header)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .textCase(.uppercase)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+            
+            VStack(spacing: 0) {
+                content()
+            }
+            .background(Color(.secondarySystemGroupedBackground))
+            .cornerRadius(10)
+            .padding(.horizontal)
         }
     }
     
