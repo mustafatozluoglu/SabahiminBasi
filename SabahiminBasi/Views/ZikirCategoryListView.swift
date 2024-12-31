@@ -51,6 +51,16 @@ struct ZikirCategoryListView: View {
 
 struct CategoryRowView: View {
     let category: ZikirCategory
+    @FetchRequest private var zikirs: FetchedResults<Zikir>
+    
+    init(category: ZikirCategory) {
+        self.category = category
+        _zikirs = FetchRequest(
+            entity: Zikir.entity(),
+            sortDescriptors: [NSSortDescriptor(keyPath: \Zikir.createdAt, ascending: true)],
+            predicate: NSPredicate(format: "category == %@", category)
+        )
+    }
     
     var body: some View {
         HStack {
@@ -66,7 +76,7 @@ struct CategoryRowView: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 
-                Text("\(category.zikirArray.count) \(String(localized: "dhikrs"))")
+                Text("\(zikirs.count) \(String(localized: "dhikrs"))")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -159,6 +169,17 @@ struct AddCategoryView: View {
 
 struct CategoryDetailView: View {
     let category: ZikirCategory
+    @Environment(\.managedObjectContext) private var viewContext
+    @FetchRequest private var zikirs: FetchedResults<Zikir>
+    
+    init(category: ZikirCategory) {
+        self.category = category
+        _zikirs = FetchRequest(
+            entity: Zikir.entity(),
+            sortDescriptors: [NSSortDescriptor(keyPath: \Zikir.createdAt, ascending: true)],
+            predicate: NSPredicate(format: "category == %@", category)
+        )
+    }
     
     var body: some View {
         List {
@@ -175,12 +196,14 @@ struct CategoryDetailView: View {
             }
             
             Section(header: Text(LocalizedStringKey("dhikrs"))) {
-                if category.zikirArray.isEmpty {
+                if zikirs.isEmpty {
                     Text(LocalizedStringKey("no_dhikrs_in_category"))
                         .foregroundColor(.secondary)
                 } else {
-                    ForEach(category.zikirArray) { zikir in
-                        ZikirRowView(zikir: zikir)
+                    ForEach(zikirs) { zikir in
+                        NavigationLink(destination: ZikirDetailView(viewModel: ZikirDetailViewModel(zikir: zikir, viewContext: viewContext))) {
+                            ZikirRowView(zikir: zikir)
+                        }
                     }
                 }
             }

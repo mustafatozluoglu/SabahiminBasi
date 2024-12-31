@@ -196,8 +196,11 @@ struct ZikirDetailView: View {
                     TextField(LocalizedStringKey("enter_target"), value: $editedTargetCount, format: .number)
                         .keyboardType(.numberPad)
                 }
+                
+                Section(header: Text(LocalizedStringKey("category"))) {
+                    CategoryPicker(selectedCategory: $viewModel.selectedCategory)
+                }
             }
-            .navigationTitle(LocalizedStringKey("edit_zikir"))
             .navigationBarItems(
                 leading: Button(LocalizedStringKey("cancel")) {
                     showingEditZikir = false
@@ -211,6 +214,28 @@ struct ZikirDetailView: View {
                     showingEditZikir = false
                 }
             )
+        }
+    }
+}
+
+struct CategoryPicker: View {
+    @Binding var selectedCategory: ZikirCategory?
+    @FetchRequest(
+        entity: ZikirCategory.entity(),
+        sortDescriptors: [NSSortDescriptor(keyPath: \ZikirCategory.createdAt, ascending: true)]
+    ) private var categories: FetchedResults<ZikirCategory>
+    
+    var body: some View {
+        Picker(LocalizedStringKey("select_category"), selection: $selectedCategory) {
+            Text(LocalizedStringKey("no_category"))
+                .tag(nil as ZikirCategory?)
+            ForEach(categories) { category in
+                HStack {
+                    Image(systemName: category.icon)
+                    Text(category.name)
+                }
+                .tag(category as ZikirCategory?)
+            }
         }
     }
 }
