@@ -89,3 +89,7 @@
 "restart_required" = "Dil değişikliğinin tam olarak etkili olması için lütfen uygulamayı yeniden başlatın";
 "add_first_zikir" = "İlk Zikrinizi Ekleyin";
 "add_first_zikir_description" = "Manevi yolculuğunuza ilk zikrinizi ekleyerek başlayın. Başlamak için aşağıdaki düğmeye dokunun.";
+"search_zikirs" = "Zikirlerde Ara";
+"show_favorites_only" = "Sadece Favorileri Göster";
+"no_results_found" = "Sonuç bulunamadı";
+"search_placeholder" = "İsim veya açıklamaya göre ara";

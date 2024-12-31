@@ -10,6 +10,18 @@ public struct ZikirListView: View {
     ) private var zikirs: FetchedResults<Zikir>
     @State private var showingAddZikir = false
     @State private var selectedTab = 0
+    @State private var searchText = ""
+    @State private var showFavoritesOnly = false
+    
+    var filteredZikirs: [Zikir] {
+        zikirs.filter { zikir in
+            let matchesSearch = searchText.isEmpty || 
+                zikir.name.localizedCaseInsensitiveContains(searchText) ||
+                zikir.zikirDescription.localizedCaseInsensitiveContains(searchText)
+            let matchesFavorite = !showFavoritesOnly || zikir.favorite
+            return matchesSearch && matchesFavorite
+        }
+    }
     
     public var body: some View {
         TabView(selection: $selectedTab) {
@@ -45,7 +57,15 @@ public struct ZikirListView: View {
                         .padding()
                     } else {
                         List {
-                            ForEach(zikirs) { zikir in
+                            SearchBar(text: $searchText)
+                                .listRowInsets(EdgeInsets())
+                            
+                            Toggle(isOn: $showFavoritesOnly) {
+                                Label(LocalizedStringKey("show_favorites_only"), systemImage: "star.fill")
+                                    .foregroundColor(.yellow)
+                            }
+                            
+                            ForEach(filteredZikirs) { zikir in
                                 NavigationLink(destination: makeDetailView(for: zikir)) {
                                     ZikirRowView(zikir: zikir)
                                 }
@@ -126,5 +146,30 @@ public struct ZikirListView: View {
             let nsError = error as NSError
             print("Error saving context: \(nsError), \(nsError.userInfo)")
         }
+    }
+}
+
+struct SearchBar: View {
+    @Binding var text: String
+    
+    var body: some View {
+        HStack {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.gray)
+            
+            TextField(LocalizedStringKey("search_zikirs"), text: $text)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+            
+            if !text.isEmpty {
+                Button(action: {
+                    text = ""
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.gray)
+                }
+            }
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 4)
     }
 }

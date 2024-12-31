@@ -90,3 +90,7 @@
 "restart_required" = "Please restart the app for the language change to take full effect";
 "add_first_zikir" = "Add Your First Dhikr";
 "add_first_zikir_description" = "Start your spiritual journey by adding your first dhikr. Tap the button below to begin.";
+"search_zikirs" = "Search Dhikrs";
+"show_favorites_only" = "Show Favorites Only";
+"no_results_found" = "No results found";
+"search_placeholder" = "Search by name or description";
