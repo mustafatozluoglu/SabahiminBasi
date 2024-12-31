@@ -14,10 +14,17 @@ struct SabahiminBasiApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ZikirListView()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
-                .preferredColorScheme(darkModeEnabled ? .dark : .light)
-                .environmentObject(languageManager)
+            SplashScreenView() // Show splash screen first
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        // Transition to the main content
+                        let mainView = ZikirListView()
+                            .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                            .preferredColorScheme(darkModeEnabled ? .dark : .light)
+                            .environmentObject(languageManager)
+                        UIApplication.shared.windows.first?.rootViewController = UIHostingController(rootView: mainView)
+                    }
+                }
         }
     }
 }
