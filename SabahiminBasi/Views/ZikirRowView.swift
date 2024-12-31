@@ -5,8 +5,16 @@ public struct ZikirRowView: View {
     
     public var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(zikir.name ?? "")
-                .font(.headline)
+            HStack {
+                Text(zikir.name ?? "")
+                    .font(.headline)
+                
+                if zikir.favorite {
+                    Image(systemName: "star.fill")
+                        .foregroundColor(.yellow)
+                        .font(.system(size: 14))
+                }
+            }
             
             HStack {
                 Text(String(format: String(localized: "completion_progress_format"), zikir.count, zikir.targetCount))

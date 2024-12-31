@@ -14,6 +14,7 @@ extension Zikir {
     @NSManaged public var completions: Int32
     @NSManaged public var createdAt: Date
     @NSManaged public var lastCompletedDate: Date?
+    @NSManaged public var favorite: Bool
     
     public var wrappedName: String {
         name

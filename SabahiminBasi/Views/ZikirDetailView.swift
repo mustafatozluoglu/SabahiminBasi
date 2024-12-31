@@ -42,7 +42,19 @@ struct ZikirDetailView: View {
             }
             .padding(.vertical)
         }
-        .navigationTitle(LocalizedStringKey("zikir_detail"))
+      //  .navigationTitle(LocalizedStringKey("zikir_detail"))
+        .navigationBarItems(trailing: 
+            Button(action: {
+                viewModel.toggleFavorite()
+                if hapticFeedbackEnabled {
+                    feedbackCounterGenerator.impactOccurred()
+                }
+            }) {
+                Image(systemName: viewModel.zikir.favorite ? "star.fill" : "star")
+                    .foregroundColor(.yellow)
+                    .font(.system(size: 18))
+            }
+        )
         .sheet(isPresented: $showingTargetEdit) {
             editTargetSheet
         }

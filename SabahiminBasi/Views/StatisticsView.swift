@@ -34,7 +34,7 @@ struct StatisticsView: View {
             }
             .padding(.vertical)
         }
-        .navigationTitle(LocalizedStringKey("statistics"))
+        //.navigationTitle(LocalizedStringKey("statistics"))
     }
 }
 

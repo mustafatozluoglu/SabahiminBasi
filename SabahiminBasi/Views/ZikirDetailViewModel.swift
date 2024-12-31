@@ -54,6 +54,13 @@ public class ZikirDetailViewModel: ObservableObject {
         }
     }
     
+    public func toggleFavorite() {
+        viewContext.perform {
+            self.zikir.favorite.toggle()
+            self.saveContext()
+        }
+    }
+    
     private func saveContext() {
         do {
             try viewContext.save()

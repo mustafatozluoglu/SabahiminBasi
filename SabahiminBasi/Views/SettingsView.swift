@@ -126,7 +126,7 @@ struct SettingsView: View {
                 }
                 .padding(.vertical)
             }
-            .navigationTitle(LocalizedStringKey("settings"))
+            //.navigationTitle(LocalizedStringKey("settings"))
             .background(Color(.systemGroupedBackground))
             .alert(LocalizedStringKey("language_changed"), isPresented: $showingLanguageAlert) {
                 Button(LocalizedStringKey("ok")) {}

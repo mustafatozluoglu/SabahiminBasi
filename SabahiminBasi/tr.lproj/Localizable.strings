@@ -87,3 +87,5 @@
 "edit" = "Düzenle";
 "language_changed" = "Dil Değiştirildi";
 "restart_required" = "Dil değişikliğinin tam olarak etkili olması için lütfen uygulamayı yeniden başlatın";
+"add_first_zikir" = "İlk Zikrinizi Ekleyin";
+"add_first_zikir_description" = "Manevi yolculuğunuza ilk zikrinizi ekleyerek başlayın. Başlamak için aşağıdaki düğmeye dokunun.";

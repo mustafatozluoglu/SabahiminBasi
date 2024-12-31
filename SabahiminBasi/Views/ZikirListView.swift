@@ -15,13 +15,44 @@ public struct ZikirListView: View {
         TabView(selection: $selectedTab) {
             // Zikirler Tab
             NavigationView {
-                List {
-                    ForEach(zikirs) { zikir in
-                        NavigationLink(destination: makeDetailView(for: zikir)) {
-                            ZikirRowView(zikir: zikir)
+                Group {
+                    if zikirs.isEmpty {
+                        VStack(spacing: 20) {
+                            Image(systemName: "plus.circle")
+                                .font(.system(size: 60))
+                                .foregroundColor(.gray)
+                            
+                            Text(LocalizedStringKey("add_first_zikir"))
+                                .font(.headline)
+                                .multilineTextAlignment(.center)
+                            
+                            Text(LocalizedStringKey("add_first_zikir_description"))
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                            
+                            Button(action: { showingAddZikir = true }) {
+                                Label(LocalizedStringKey("add_dhikr"), systemImage: "plus")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .background(Color.blue)
+                                    .cornerRadius(10)
+                            }
+                            .padding(.top)
+                        }
+                        .padding()
+                    } else {
+                        List {
+                            ForEach(zikirs) { zikir in
+                                NavigationLink(destination: makeDetailView(for: zikir)) {
+                                    ZikirRowView(zikir: zikir)
+                                }
+                            }
+                            .onDelete(perform: deleteZikirs)
                         }
                     }
-                    .onDelete(perform: deleteZikirs)
                 }
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
@@ -35,7 +66,7 @@ public struct ZikirListView: View {
                         addZikir(name: name, description: description, targetCount: targetCount)
                     }
                 }
-                .navigationTitle(LocalizedStringKey("dhikr_list"))
+                //.navigationTitle(LocalizedStringKey("dhikr_list"))
             }
             .tabItem {
                 Label(LocalizedStringKey("dhikrs"), systemImage: "list.bullet")
@@ -54,7 +85,6 @@ public struct ZikirListView: View {
             // Ayarlar Tab
             NavigationView {
                 SettingsView()
-                    .navigationTitle(LocalizedStringKey("settings"))
             }
             .tabItem {
                 Label(LocalizedStringKey("settings"), systemImage: "gear")
