@@ -87,7 +87,7 @@ struct SettingsView: View {
                         }
                     }
                     
-                    settingsSection(header: LocalizedStringKey("notifications")) {
+                   /* settingsSection(header: LocalizedStringKey("notifications")) {
                         Toggle(LocalizedStringKey("notifications_enabled"), isOn: $notificationsEnabled)
                             .padding(.horizontal)
                             .padding(.vertical, 12)
@@ -96,7 +96,7 @@ struct SettingsView: View {
                                     requestNotificationPermission()
                                 }
                             }
-                    }
+                    }*/
                     
                     settingsSection(header: LocalizedStringKey("about")) {
                         Button(action: {
