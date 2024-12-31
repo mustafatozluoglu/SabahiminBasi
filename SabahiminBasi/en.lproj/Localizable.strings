@@ -86,3 +86,5 @@
 "zikir_name" = "Dhikr Name";
 "enter_zikir_name" = "Enter dhikr name";
 "edit" = "Edit";
+"language_changed" = "Language Changed";
+"restart_required" = "Please restart the app for the language change to take full effect";

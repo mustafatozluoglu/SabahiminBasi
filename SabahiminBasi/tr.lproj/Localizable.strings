@@ -85,3 +85,5 @@
 "zikir_name" = "Zikir Adı";
 "enter_zikir_name" = "Zikir adını girin";
 "edit" = "Düzenle";
+"language_changed" = "Dil Değiştirildi";
+"restart_required" = "Dil değişikliğinin tam olarak etkili olması için lütfen uygulamayı yeniden başlatın";

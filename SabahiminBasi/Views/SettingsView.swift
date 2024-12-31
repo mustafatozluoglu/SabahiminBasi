@@ -3,14 +3,15 @@ import MessageUI
 import UserNotifications
 
 struct SettingsView: View {
-    @AppStorage("isDarkMode") private var isDarkMode = false
+    @AppStorage("darkModeEnabled") private var darkModeEnabled = false
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
     @AppStorage("timerEnabled") private var timerEnabled = false
     @AppStorage("timerInterval") private var timerInterval = 1.0
     @AppStorage("notificationsEnabled") private var notificationsEnabled = false
-    @AppStorage("selectedLanguage") private var selectedLanguage = "en"
+    @EnvironmentObject private var languageManager: LanguageManager
     @State private var showingMailCompose = false
     @State private var showingSuccessAlert = false
+    @State private var showingLanguageAlert = false
     @Environment(\.colorScheme) var colorScheme
     
     private let languages = [
@@ -22,21 +23,19 @@ struct SettingsView: View {
         NavigationView {
             Form {
                 Section(header: Text(LocalizedStringKey("general"))) {
-                    Toggle(LocalizedStringKey("dark_mode"), isOn: $isDarkMode)
-                        .onChange(of: isDarkMode) { newValue in
+                    Toggle(LocalizedStringKey("dark_mode"), isOn: $darkModeEnabled)
+                        .onChange(of: darkModeEnabled) { newValue in
                             setAppearance(newValue)
                         }
                     
-                    Picker(selection: $selectedLanguage) {
+                    Picker(LocalizedStringKey("language"), selection: $languageManager.currentLanguage) {
                         ForEach(languages.sorted(by: { $0.value < $1.value }), id: \.key) { key, value in
                             Text(value).tag(key)
                         }
-                    } label: {
-                        Text(LocalizedStringKey("language"))
                     }
-                    .onChange(of: selectedLanguage) { _ in
-                        UserDefaults.standard.set([selectedLanguage], forKey: "AppleLanguages")
-                        UserDefaults.standard.synchronize()
+                    .onChange(of: languageManager.currentLanguage) { newValue in
+                        languageManager.setLanguage(newValue)
+                        showingLanguageAlert = true
                     }
                     
                     Toggle(LocalizedStringKey("haptic_feedback"), isOn: $hapticFeedbackEnabled)
@@ -81,6 +80,11 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle(LocalizedStringKey("settings"))
+            .alert(LocalizedStringKey("language_changed"), isPresented: $showingLanguageAlert) {
+                Button(LocalizedStringKey("ok")) {}
+            } message: {
+                Text(LocalizedStringKey("restart_required"))
+            }
             .alert(String(localized: "success"), isPresented: $showingSuccessAlert) {
                 Button(String(localized: "ok")) {}
             } message: {
@@ -92,7 +96,7 @@ struct SettingsView: View {
         }
         .onAppear {
             // Ensure the UI matches the stored dark mode setting
-            setAppearance(isDarkMode)
+            setAppearance(darkModeEnabled)
         }
     }
     
