@@ -3,22 +3,25 @@
     <entity name="Item" representedClassName="Item" syncable="YES" codeGenerationType="class">
         <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
     </entity>
-    <entity name="ZikirDb" representedClassName="ZikirDb" syncable="YES" codeGenerationType="class">
-        <attribute name="create_date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="zikir_current_count" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="zikir_description" optional="YES" attributeType="String"/>
-        <attribute name="zikir_name" optional="YES" attributeType="String"/>
-        <attribute name="zikir_target_count" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
-    </entity>
     <entity name="Zikir" representedClassName="Zikir" syncable="YES">
         <attribute name="completions" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="count" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="favorite" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="lastCompletedDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="name" attributeType="String"/>
         <attribute name="targetCount" attributeType="Integer 32" defaultValueString="33" usesScalarValueType="YES"/>
         <attribute name="zikirDescription" attributeType="String"/>
-        <attribute name="favorite" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <relationship name="category" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ZikirCategory" inverseName="zikirs" inverseEntity="ZikirCategory"/>
+    </entity>
+    <entity name="ZikirCategory" representedClassName="ZikirCategory" syncable="YES">
+        <attribute name="categoryDescription" attributeType="String" defaultValueString=""/>
+        <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="icon" attributeType="String" defaultValueString=""/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="type" attributeType="String" defaultValueString="custom"/>
+        <relationship name="zikirs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Zikir" inverseName="category" inverseEntity="Zikir"/>
     </entity>
 </model>

@@ -102,6 +102,17 @@ public struct ZikirListView: View {
             }
             .tag(1)
             
+            // Categories Tab
+            NavigationView {
+                ZikirCategoryListView(viewContext: viewContext)
+            }
+            .tabItem {
+                Label(LocalizedStringKey("categories"), systemImage: "folder.fill")
+            }
+            .tag(2)
+            
+          
+            
             // Ayarlar Tab
             NavigationView {
                 SettingsView()
@@ -109,7 +120,7 @@ public struct ZikirListView: View {
             .tabItem {
                 Label(LocalizedStringKey("settings"), systemImage: "gear")
             }
-            .tag(2)
+            .tag(3)
         }
     }
     

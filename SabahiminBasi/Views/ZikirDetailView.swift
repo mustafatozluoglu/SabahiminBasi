@@ -165,7 +165,6 @@ struct ZikirDetailView: View {
                 TextField(LocalizedStringKey("new_target"), text: $newTarget)
                     .keyboardType(.numberPad)
             }
-            .navigationTitle(LocalizedStringKey("edit_target"))
             .navigationBarItems(
                 leading: Button(LocalizedStringKey("cancel")) {
                     showingTargetEdit = false
@@ -203,7 +202,7 @@ struct ZikirDetailView: View {
                 leading: Button(LocalizedStringKey("cancel")) {
                     showingEditZikir = false
                 },
-                trailing: Button(LocalizedStringKey("save_changes")) {
+                trailing: Button(LocalizedStringKey("save")) {
                     viewModel.updateZikir(
                         name: editedName,
                         description: editedDescription,
