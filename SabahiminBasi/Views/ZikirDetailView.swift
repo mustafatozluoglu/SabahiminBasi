@@ -172,10 +172,14 @@ struct ZikirDetailView: View {
         NavigationView {
             Form {
                 Section(header: Text(LocalizedStringKey("zikir_name"))) {
-                    TextField(LocalizedStringKey("enter_zikir_name"), text: $editedName)
+                    TextField(LocalizedStringKey("enter_zikir_name"), text: $editedName, axis: .vertical)
+                        .lineLimit(1...6)
+                        .textInputAutocapitalization(.sentences)
                 }
                 Section(header: Text(LocalizedStringKey("description"))) {
-                    TextField(LocalizedStringKey("enter_description"), text: $editedDescription)
+                    TextField(LocalizedStringKey("enter_description"), text: $editedDescription, axis: .vertical)
+                        .lineLimit(1...6)
+                        .textInputAutocapitalization(.sentences)
                 }
                 Section(header: Text(LocalizedStringKey("target"))) {
                     TextField(LocalizedStringKey("enter_target"), value: $editedTargetCount, format: .number)

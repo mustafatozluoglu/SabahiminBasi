@@ -13,8 +13,12 @@ public struct AddZikirView: View {
         NavigationView {
             Form {
                 Section {
-                    TextField(LocalizedStringKey("enter_dhikr_name"), text: $name)
-                    TextField(LocalizedStringKey("enter_description"), text: $description)
+                    TextField(LocalizedStringKey("enter_dhikr_name"), text: $name, axis: .vertical)
+                    .lineLimit(1...6)
+                    .textInputAutocapitalization(.sentences)
+                    TextField(LocalizedStringKey("enter_description"), text: $description, axis: .vertical)
+                        .lineLimit(1...6)
+                        .textInputAutocapitalization(.sentences)
                     TextField(LocalizedStringKey("enter_target"), text: $targetCount)
                         .keyboardType(.numberPad)
                 }
