@@ -36,7 +36,6 @@ struct ZikirCategoryListView: View {
                 }
             }
         }
-        .navigationTitle(LocalizedStringKey("categories"))
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: { showingAddCategory = true }) {
@@ -139,7 +138,6 @@ struct AddCategoryView: View {
                     .padding(.vertical)
                 }
             }
-            .navigationTitle(LocalizedStringKey("new_category"))
             .navigationBarItems(
                 leading: Button(LocalizedStringKey("cancel")) {
                     dismiss()
