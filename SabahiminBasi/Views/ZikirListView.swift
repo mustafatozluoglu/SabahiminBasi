@@ -1,5 +1,6 @@
 import SwiftUI
 import CoreData
+import Combine
 
 public struct ZikirListView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -12,6 +13,7 @@ public struct ZikirListView: View {
     @State private var selectedTab = 0
     @State private var searchText = ""
     @State private var showFavoritesOnly = false
+    @State private var needsRefresh = false
     
     var filteredZikirs: [Zikir] {
         zikirs.filter { zikir in
@@ -72,6 +74,10 @@ public struct ZikirListView: View {
                             }
                             .onDelete(perform: deleteZikirs)
                         }
+                        .refreshable {
+                            needsRefresh.toggle()
+                            try? viewContext.save()
+                        }
                     }
                 }
                 .toolbar {
@@ -86,7 +92,9 @@ public struct ZikirListView: View {
                         addZikir(name: name, description: description, targetCount: targetCount)
                     }
                 }
-                //.navigationTitle(LocalizedStringKey("dhikr_list"))
+                .onChange(of: needsRefresh) { _ in
+                    viewContext.refreshAllObjects()
+                }
             }
             .tabItem {
                 Label(LocalizedStringKey("dhikrs"), systemImage: "list.bullet")
@@ -126,6 +134,23 @@ public struct ZikirListView: View {
     
     private func makeDetailView(for zikir: Zikir) -> some View {
         ZikirDetailView(viewModel: ZikirDetailViewModel(zikir: zikir, viewContext: viewContext))
+            .onDisappear {
+                // Force refresh of all objects when returning from detail view
+                viewContext.refreshAllObjects()
+                needsRefresh.toggle()
+                
+                // Ensure changes are saved
+                if viewContext.hasChanges {
+                    try? viewContext.save()
+                }
+                
+                // Post notification to trigger UI updates
+                NotificationCenter.default.post(
+                    name: .NSManagedObjectContextDidSave,
+                    object: viewContext,
+                    userInfo: nil
+                )
+            }
     }
     
     private func deleteZikirs(offsets: IndexSet) {

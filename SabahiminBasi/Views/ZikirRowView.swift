@@ -1,48 +1,69 @@
 import SwiftUI
+import CoreData
+import Combine
 
-public struct ZikirRowView: View {
+struct ZikirRowView: View {
     @ObservedObject var zikir: Zikir
+    @Environment(\.managedObjectContext) private var viewContext
     
-    public var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(zikir.name ?? "")
-                    .font(.headline)
+    private let categoryColors: [String: Color] = [
+        "morning": .blue,
+        "evening": .purple,
+        "daily": .green,
+        "special": .orange,
+        "custom": .gray
+    ]
+    
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(zikir.name)
+                        .font(.headline)
+                    
+                    if zikir.favorite {
+                        Image(systemName: "star.fill")
+                            .foregroundColor(.yellow)
+                            .font(.system(size: 14))
+                    }
+                }
                 
-                if zikir.favorite {
-                    Image(systemName: "star.fill")
-                        .foregroundColor(.yellow)
-                        .font(.system(size: 14))
+                Text(zikir.zikirDescription)
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .lineLimit(2)
+                
+                if let category = zikir.category {
+                    HStack(spacing: 4) {
+                        Image(systemName: category.icon)
+                            .font(.system(size: 12))
+                        Text("\(category.name)")
+                            .font(.system(size: 12, weight: .medium))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(categoryColors[category.type] ?? .gray)
+                    )
                 }
             }
             
-            HStack {
-                Text(String(format: String(localized: "completion_progress_format"), zikir.count, zikir.targetCount))
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                
-                Spacer()
-                
-                Text(String(format: String(localized: "completion_count_format"), zikir.completions))
-                    .font(.caption)
-                    .foregroundColor(.green)
-            }
+            Spacer()
             
-            ProgressView(value: Double(zikir.count), total: Double(zikir.targetCount))
-                .progressViewStyle(LinearProgressViewStyle())
-                .tint(progressColor)
+            VStack(alignment: .trailing, spacing: 4) {
+                Text("\(zikir.count)/\(zikir.targetCount)")
+                    .font(.system(size: 14, weight: .medium))
+                
+                Text("\(zikir.completions) \(String(localized: "times"))")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
         }
         .padding(.vertical, 4)
-    }
-    
-    private var progressColor: Color {
-        let progress = Double(zikir.count) / Double(zikir.targetCount)
-        if progress >= 1.0 {
-            return .green
-        } else if progress >= 0.5 {
-            return .orange
-        } else {
-            return .blue
+        .onReceive(NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)) { _ in
+            viewContext.refresh(zikir, mergeChanges: true)
         }
     }
 }
