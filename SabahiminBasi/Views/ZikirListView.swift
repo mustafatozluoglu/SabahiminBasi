@@ -1,63 +1,211 @@
 import SwiftUI
+import CoreData
+import Combine
 
 public struct ZikirListView: View {
-    @StateObject private var viewModel: ZikirListViewModel
+    @Environment(\.managedObjectContext) private var viewContext
+    @FetchRequest(
+        entity: Zikir.entity(),
+        sortDescriptors: [NSSortDescriptor(keyPath: \Zikir.createdAt, ascending: true)],
+        animation: .default
+    ) private var zikirs: FetchedResults<Zikir>
     @State private var showingAddZikir = false
-    @State private var showingSettings = false
+    @State private var selectedTab = 0
+    @State private var searchText = ""
+    @State private var showFavoritesOnly = false
+    @State private var needsRefresh = false
     
-    public init(viewModel: ZikirListViewModel) {
-        _viewModel = StateObject(wrappedValue: viewModel)
+    var filteredZikirs: [Zikir] {
+        zikirs.filter { zikir in
+            let matchesSearch = searchText.isEmpty || 
+                zikir.name.localizedCaseInsensitiveContains(searchText) ||
+                zikir.zikirDescription.localizedCaseInsensitiveContains(searchText)
+            let matchesFavorite = !showFavoritesOnly || zikir.favorite
+            return matchesSearch && matchesFavorite
+        }
     }
     
     public var body: some View {
-        NavigationView {
-            List {
-                ForEach(viewModel.zikirs) { zikir in
-                    NavigationLink(destination: makeDetailView(for: zikir)) {
-                        ZikirRowView(zikir: zikir)
+        TabView(selection: $selectedTab) {
+            // Zikirler Tab
+            NavigationView {
+                Group {
+                    if zikirs.isEmpty {
+                        VStack(spacing: 20) {
+                            Image(systemName: "plus.circle")
+                                .font(.system(size: 60))
+                                .foregroundColor(.gray)
+                            
+                            Text(LocalizedStringKey("add_first_zikir"))
+                                .font(.headline)
+                                .multilineTextAlignment(.center)
+                            
+                            Text(LocalizedStringKey("add_first_zikir_description"))
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                            
+                            Button(action: { showingAddZikir = true }) {
+                                Label(LocalizedStringKey("add_dhikr"), systemImage: "plus")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .background(Color.blue)
+                                    .cornerRadius(10)
+                            }
+                            .padding(.top)
+                        }
+                        .padding()
+                    } else {
+                        List {
+                            SearchBar(text: $searchText)
+                                .listRowInsets(EdgeInsets())
+                            
+                            Toggle(isOn: $showFavoritesOnly) {
+                                Label(LocalizedStringKey("show_favorites_only"), systemImage: "star.fill")
+                                    .foregroundColor(.yellow)
+                            }
+                            
+                            ForEach(filteredZikirs) { zikir in
+                                NavigationLink(destination: makeDetailView(for: zikir)) {
+                                    ZikirRowView(zikir: zikir)
+                                }
+                            }
+                            .onDelete(perform: deleteZikirs)
+                        }
+                        .refreshable {
+                            needsRefresh.toggle()
+                            try? viewContext.save()
+                        }
                     }
                 }
-                .onDelete { indexSet in
-                    indexSet.forEach { index in
-                        viewModel.delete(viewModel.zikirs[index])
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: { showingAddZikir = true }) {
+                            Label(LocalizedStringKey("add_dhikr"), systemImage: "plus")
+                        }
                     }
+                }
+                .sheet(isPresented: $showingAddZikir) {
+                    AddZikirView { name, description, targetCount in
+                        addZikir(name: name, description: description, targetCount: targetCount)
+                    }
+                }
+                .onChange(of: needsRefresh) { _ in
+                    viewContext.refreshAllObjects()
                 }
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { showingSettings = true }) {
-                        Image(systemName: "gearshape.fill")
-                    }
-                }
-                ToolbarItem(placement: .principal) {
-                    HStack {
-                        Image(systemName: "list.bullet")
-                        Text("Zikir Listem")
-                            .font(.headline)
-                    }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingAddZikir = true }) {
-                        Image(systemName: "plus")
-                    }
-                }
+            .tabItem {
+                Label(LocalizedStringKey("dhikrs"), systemImage: "list.bullet")
             }
-            .sheet(isPresented: $showingAddZikir) {
-                AddZikirView { name, description, targetCount in
-                    viewModel.add(name: name, description: description, targetCount: targetCount)
-                }
+            .tag(0)
+            
+            // İstatistikler Tab
+            NavigationView {
+                StatisticsView(viewContext: viewContext)
             }
-            .sheet(isPresented: $showingSettings) {
+            .tabItem {
+                Label(LocalizedStringKey("statistics"), systemImage: "chart.bar.fill")
+            }
+            .tag(1)
+            
+            // Categories Tab
+            NavigationView {
+                ZikirCategoryListView(viewContext: viewContext)
+            }
+            .tabItem {
+                Label(LocalizedStringKey("categories"), systemImage: "folder.fill")
+            }
+            .tag(2)
+            
+          
+            
+            // Ayarlar Tab
+            NavigationView {
                 SettingsView()
             }
-            .onAppear {
-                viewModel.load()
+            .tabItem {
+                Label(LocalizedStringKey("settings"), systemImage: "gear")
             }
+            .tag(3)
         }
     }
     
     private func makeDetailView(for zikir: Zikir) -> some View {
-        let detailViewModel = ZikirDetailViewModel(zikir: zikir, repository: viewModel.repository)
-        return ZikirDetailView(viewModel: detailViewModel)
+        ZikirDetailView(viewModel: ZikirDetailViewModel(zikir: zikir, viewContext: viewContext))
+            .onDisappear {
+                // Force refresh of all objects when returning from detail view
+                viewContext.refreshAllObjects()
+                needsRefresh.toggle()
+                
+                // Ensure changes are saved
+                if viewContext.hasChanges {
+                    try? viewContext.save()
+                }
+                
+                // Post notification to trigger UI updates
+                NotificationCenter.default.post(
+                    name: .NSManagedObjectContextDidSave,
+                    object: viewContext,
+                    userInfo: nil
+                )
+            }
+    }
+    
+    private func deleteZikirs(offsets: IndexSet) {
+        withAnimation {
+            offsets.map { zikirs[$0] }.forEach(viewContext.delete)
+            
+            do {
+                try viewContext.save()
+            } catch {
+                let nsError = error as NSError
+                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+            }
+        }
+    }
+    
+    private func addZikir(name: String, description: String, targetCount: Int) {
+        let newZikir = Zikir(context: viewContext)
+        newZikir.id = UUID()
+        newZikir.name = name
+        newZikir.zikirDescription = description
+        newZikir.targetCount = Int32(targetCount)
+        newZikir.count = 0
+        newZikir.completions = 0
+        newZikir.createdAt = Date()
+        
+        do {
+            try viewContext.save()
+        } catch {
+            let nsError = error as NSError
+            print("Error saving context: \(nsError), \(nsError.userInfo)")
+        }
+    }
+}
+
+struct SearchBar: View {
+    @Binding var text: String
+    
+    var body: some View {
+        HStack {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.gray)
+            
+            TextField(LocalizedStringKey("search_zikirs"), text: $text)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+            
+            if !text.isEmpty {
+                Button(action: {
+                    text = ""
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.gray)
+                }
+            }
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 4)
     }
 }

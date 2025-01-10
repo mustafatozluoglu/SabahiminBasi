@@ -1,44 +1,69 @@
 import SwiftUI
+import CoreData
+import Combine
 
-public struct ZikirRowView: View {
-    let zikir: Zikir
+struct ZikirRowView: View {
+    @ObservedObject var zikir: Zikir
+    @Environment(\.managedObjectContext) private var viewContext
     
-    public var body: some View {
+    private let categoryColors: [String: Color] = [
+        "morning": .blue,
+        "evening": .purple,
+        "daily": .green,
+        "special": .orange,
+        "custom": .gray
+    ]
+    
+    var body: some View {
         HStack {
-            VStack(alignment: .center) {
-                Text("\(formatNumber(zikir.targetCount))")
-                    .font(.title2)
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-                Text("\(formatNumber(zikir.count))")
-                    .font(.caption)
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-            }
-            .frame(width: 50)
-            .padding(8)
-            .background(Color.gray)
-            .cornerRadius(8)
-            
-            VStack(alignment: .leading) {
-                Text(zikir.name)
-                    .font(.headline)
-                Text(zikir.description)
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(zikir.name)
+                        .font(.headline)
+                    
+                    if zikir.favorite {
+                        Image(systemName: "star.fill")
+                            .foregroundColor(.yellow)
+                            .font(.system(size: 14))
+                    }
+                }
+                
+                Text(zikir.zikirDescription)
                     .font(.subheadline)
                     .foregroundColor(.gray)
-                Text("\(zikir.completions). kez tamamlandı.")
+                    .lineLimit(2)
+                
+                if let category = zikir.category {
+                    HStack(spacing: 4) {
+                        Image(systemName: category.icon)
+                            .font(.system(size: 12))
+                        Text("\(category.name)")
+                            .font(.system(size: 12, weight: .medium))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(categoryColors[category.type] ?? .gray)
+                    )
+                }
+            }
+            
+            Spacer()
+            
+            VStack(alignment: .trailing, spacing: 4) {
+                Text("\(zikir.count)/\(zikir.targetCount)")
+                    .font(.system(size: 14, weight: .medium))
+                
+                Text("\(zikir.completions) \(String(localized: "times"))")
                     .font(.caption)
-                    .foregroundColor(.green)
+                    .foregroundColor(.gray)
             }
         }
         .padding(.vertical, 4)
-    }
-    
-    private func formatNumber(_ number: Int) -> String {
-        let numberFormatter = NumberFormatter()
-        numberFormatter.numberStyle = .decimal
-        return numberFormatter.string(from: NSNumber(value: number)) ?? "\(number)"
+        .onReceive(NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)) { _ in
+            viewContext.refresh(zikir, mergeChanges: true)
+        }
     }
 }

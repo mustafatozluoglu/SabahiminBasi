@@ -1,49 +1,183 @@
 import SwiftUI
 import MessageUI
+import UserNotifications
 
 struct SettingsView: View {
+    @AppStorage("darkModeEnabled") private var darkModeEnabled = false
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
-    @AppStorage("timerInterval") private var timerInterval: Double = 1.0
-    @AppStorage("timerEnabled") private var timerEnabled: Bool = false
+    @AppStorage("timerEnabled") private var timerEnabled = false
+    @AppStorage("timerInterval") private var timerInterval = 1.0
+    @AppStorage("notificationsEnabled") private var notificationsEnabled = false
+    @EnvironmentObject private var languageManager: LanguageManager
     @State private var showingMailCompose = false
-    @State private var mailComposeResult: Result<MFMailComposeResult, Error>? = nil
     @State private var showingSuccessAlert = false
+    @State private var showingLanguageAlert = false
+    @Environment(\.colorScheme) var colorScheme
+    
+    private let languages = [
+        "en": "English",
+        "tr": "Türkçe"
+    ]
     
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("Genel")) {
-                    Toggle("Titreşimli Geri Bildirim", isOn: $hapticFeedbackEnabled)
-                    
-                    Toggle("Zamanlayıcı Etkin", isOn: $timerEnabled)
-                    
-                    if timerEnabled {
-                        HStack {
-                            Text("Zamanlayıcı Aralığı")
-                            Spacer()
-                            Text("\(timerInterval, specifier: "%.1f") saniye")
-                        }
+            ScrollView {
+                VStack(spacing: 0) {
+                    settingsSection(header: LocalizedStringKey("general")) {
+                        Toggle(LocalizedStringKey("dark_mode"), isOn: $darkModeEnabled)
+                            .padding(.horizontal)
+                            .padding(.vertical, 12)
+                            .onChange(of: darkModeEnabled) { newValue in
+                                setAppearance(newValue)
+                            }
                         
-                        Slider(value: $timerInterval, in: 0.1...30.0, step: 0.1) {
-                            Text("Zamanlayıcı Aralığı")
+                        Divider()
+                        
+                        HStack {
+                            Text(LocalizedStringKey("language"))
+                            Spacer()
+                            Menu {
+                                Button("English") {
+                                    languageManager.setLanguage("en")
+                                    showingLanguageAlert = true
+                                }
+                                Button("Türkçe") {
+                                    languageManager.setLanguage("tr")
+                                    showingLanguageAlert = true
+                                }
+                            } label: {
+                                HStack {
+                                    Text(languages[languageManager.currentLanguage] ?? "")
+                                        .foregroundColor(.secondary)
+                                    Image(systemName: "chevron.up.chevron.down")
+                                        .foregroundColor(.secondary)
+                                        .imageScale(.small)
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.vertical, 10)
+                        
+                        Divider()
+                        
+                        Toggle(LocalizedStringKey("haptic_feedback"), isOn: $hapticFeedbackEnabled)
+                            .padding(.horizontal)
+                            .padding(.vertical, 10)
+                    }
+                    
+                    settingsSection(header: LocalizedStringKey("timer")) {
+                        Toggle(LocalizedStringKey("timer_enabled"), isOn: $timerEnabled)
+                            .padding(.horizontal)
+                            .padding(.vertical, 12)
+                        
+                        if timerEnabled {
+                            Divider()
+                            
+                            VStack(spacing: 8) {
+                                HStack {
+                                    Text(LocalizedStringKey("interval"))
+                                    Spacer()
+                                    Text(String(format: "%.1f", timerInterval))
+                                }
+                                
+                                Slider(value: $timerInterval, in: 0.1...30.0, step: 0.1)
+                            }
+                            .padding(.horizontal)
+                            .padding(.vertical, 12)
                         }
                     }
+                    
+                   /* settingsSection(header: LocalizedStringKey("notifications")) {
+                        Toggle(LocalizedStringKey("notifications_enabled"), isOn: $notificationsEnabled)
+                            .padding(.horizontal)
+                            .padding(.vertical, 12)
+                            .onChange(of: notificationsEnabled) { newValue in
+                                if newValue {
+                                    requestNotificationPermission()
+                                }
+                            }
+                    }*/
+                    
+                    settingsSection(header: LocalizedStringKey("about")) {
+                        Button(action: {
+                            showingMailCompose = true
+                        }) {
+                            HStack {
+                                Text(LocalizedStringKey("send_feedback"))
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.vertical, 12)
+                        
+                        Divider()
+                        
+                        HStack {
+                            Text(LocalizedStringKey("version"))
+                            Spacer()
+                            Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.horizontal)
+                        .padding(.vertical, 12)
+                    }
                 }
-                
-                Button("Geri Bildirim Gönder") {
-                    showingMailCompose = true
-                }
+                .padding(.vertical)
             }
-            .navigationTitle("Ayarlar")
-            .alert(isPresented: $showingSuccessAlert) {
-                Alert(
-                    title: Text("Başarılı"),
-                    message: Text("Geri bildiriminiz için teşekkür ederiz!"),
-                    dismissButton: .default(Text("Tamam"))
-                )
+            //.navigationTitle(LocalizedStringKey("settings"))
+            .background(Color(.systemGroupedBackground))
+            .alert(LocalizedStringKey("language_changed"), isPresented: $showingLanguageAlert) {
+                Button(LocalizedStringKey("ok")) {}
+            } message: {
+                Text(LocalizedStringKey("restart_required"))
+            }
+            .alert(String(localized: "success"), isPresented: $showingSuccessAlert) {
+                Button(String(localized: "ok")) {}
+            } message: {
+                Text(LocalizedStringKey("feedback_sent"))
             }
             .sheet(isPresented: $showingMailCompose) {
-                MailComposeView(isShowing: $showingMailCompose, result: $mailComposeResult, showingSuccessAlert: $showingSuccessAlert)
+                MailComposeView(isShowing: $showingMailCompose, showSuccessAlert: $showingSuccessAlert)
+            }
+        }
+        .onAppear {
+            // Ensure the UI matches the stored dark mode setting
+            setAppearance(darkModeEnabled)
+        }
+    }
+    
+    private func settingsSection<Content: View>(header: LocalizedStringKey, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(header)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .textCase(.uppercase)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+            
+            VStack(spacing: 0) {
+                content()
+            }
+            .background(Color(.secondarySystemGroupedBackground))
+            .cornerRadius(10)
+            .padding(.horizontal)
+        }
+    }
+    
+    private func setAppearance(_ isDark: Bool) {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            windowScene.windows.forEach { window in
+                window.overrideUserInterfaceStyle = isDark ? .dark : .light
+            }
+        }
+    }
+    
+    private func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
+            if let error = error {
+                print("Error requesting notification permission: \(error)")
             }
         }
     }
@@ -51,50 +185,40 @@ struct SettingsView: View {
 
 struct MailComposeView: UIViewControllerRepresentable {
     @Binding var isShowing: Bool
-    @Binding var result: Result<MFMailComposeResult, Error>?
-    @Binding var showingSuccessAlert: Bool
+    @Binding var showSuccessAlert: Bool
     
     class Coordinator: NSObject, MFMailComposeViewControllerDelegate {
         @Binding var isShowing: Bool
-        @Binding var result: Result<MFMailComposeResult, Error>?
-        @Binding var showingSuccessAlert: Bool
+        @Binding var showSuccessAlert: Bool
         
-        init(isShowing: Binding<Bool>, result: Binding<Result<MFMailComposeResult, Error>?>, showingSuccessAlert: Binding<Bool>) {
+        init(isShowing: Binding<Bool>, showSuccessAlert: Binding<Bool>) {
             _isShowing = isShowing
-            _result = result
-            _showingSuccessAlert = showingSuccessAlert
+            _showSuccessAlert = showSuccessAlert
         }
         
-        func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
-            defer {
-                isShowing = false
-            }
-            if let error = error {
-                self.result = .failure(error)
-                return
-            }
-            self.result = .success(result)
+        func mailComposeController(_ controller: MFMailComposeViewController,
+                                 didFinishWith result: MFMailComposeResult,
+                                 error: Error?) {
+            isShowing = false
             if result == .sent {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.showingSuccessAlert = true
-                }
+                showSuccessAlert = true
             }
         }
     }
     
     func makeCoordinator() -> Coordinator {
-        return Coordinator(isShowing: $isShowing, result: $result, showingSuccessAlert: $showingSuccessAlert)
+        return Coordinator(isShowing: $isShowing, showSuccessAlert: $showSuccessAlert)
     }
     
-    func makeUIViewController(context: UIViewControllerRepresentableContext<MailComposeView>) -> MFMailComposeViewController {
+    func makeUIViewController(context: Context) -> MFMailComposeViewController {
         let vc = MFMailComposeViewController()
-        vc.setToRecipients(["m_saidt@hotmail.com"])
-        vc.setSubject("Zikir Uygulaması Geri Bildirim")
         vc.mailComposeDelegate = context.coordinator
+        vc.setToRecipients(["m_saidt@hotmail.com"])
+        vc.setSubject(String(localized: "feedback_subject"))
         return vc
     }
     
-    func updateUIViewController(_ uiViewController: MFMailComposeViewController, context: UIViewControllerRepresentableContext<MailComposeView>) {}
+    func updateUIViewController(_ uiViewController: MFMailComposeViewController, context: Context) {}
 }
 
 #Preview {

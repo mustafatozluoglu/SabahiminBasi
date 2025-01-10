@@ -1,20 +1,30 @@
 import SwiftUI
-
+import CoreData
 
 @main
-struct ZikirCounterApp: App {
-    let repository: ZikirRepository
-    let viewModel: ZikirListViewModel
+struct SabahiminBasiApp: App {
+    let persistenceController = PersistenceController.shared
+    @AppStorage("darkModeEnabled") private var darkModeEnabled = false
+    @StateObject private var languageManager = LanguageManager.shared
     
     init() {
-        let storageService = UserDefaultsStorageService()
-        repository = DefaultZikirRepository(storageService: storageService)
-        viewModel = ZikirListViewModel(repository: repository)
+        // Set initial language
+        Bundle.setLanguage(LanguageManager.shared.currentLanguage)
     }
     
     var body: some Scene {
         WindowGroup {
-            ZikirListView(viewModel: viewModel)
+            SplashScreenView() // Show splash screen first
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        // Transition to the main content
+                        let mainView = ZikirListView()
+                            .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                            .preferredColorScheme(darkModeEnabled ? .dark : .light)
+                            .environmentObject(languageManager)
+                        UIApplication.shared.windows.first?.rootViewController = UIHostingController(rootView: mainView)
+                    }
+                }
         }
     }
 }
