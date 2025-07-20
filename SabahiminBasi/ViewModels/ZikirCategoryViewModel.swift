@@ -26,8 +26,8 @@ class ZikirCategoryViewModel: ObservableObject {
     func createCategory(name: String, description: String, type: String, icon: String) {
         let category = ZikirCategory(context: viewContext)
         category.id = UUID()
-        category.name = name
-        category.categoryDescription = description
+        category.nameKey = name
+        category.descriptionKey = description
         category.type = type
         category.icon = icon
         category.createdAt = Date()
@@ -58,10 +58,10 @@ class ZikirCategoryViewModel: ObservableObject {
             if count == 0 {
                 // Create default categories
                 let defaultCategories = [
-                    (name: String(localized: "morning_dhikr"), description: String(localized: "morning_dhikr_description"), type: "morning", icon: "sunrise.fill"),
-                    (name: String(localized: "evening_dhikr"), description: String(localized: "evening_dhikr_description"), type: "evening", icon: "sunset.fill"),
-                    (name: String(localized: "daily_dhikr"), description: String(localized: "daily_dhikr_description"), type: "daily", icon: "clock.fill"),
-                    (name: String(localized: "special_occasions"), description: String(localized: "special_occasions_description"), type: "special", icon: "star.fill")
+                    (name: "morning_dhikr", description: "morning_dhikr_description", type: "morning", icon: "sunrise.fill"),
+                    (name: "evening_dhikr", description: "evening_dhikr_description", type: "evening", icon: "sunset.fill"),
+                    (name: "daily_dhikr", description: "daily_dhikr_description", type: "daily", icon: "clock.fill"),
+                    (name: "special_occasions", description: "special_occasions_description", type: "special", icon: "star.fill")
                 ]
                 
                 for category in defaultCategories {

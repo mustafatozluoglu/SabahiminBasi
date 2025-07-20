@@ -15,8 +15,10 @@ struct ZikirCategoryListView: View {
             return viewModel.categories
         }
         return viewModel.categories.filter { category in
-            category.name.localizedCaseInsensitiveContains(searchText) ||
-            category.categoryDescription.localizedCaseInsensitiveContains(searchText)
+            let localizedName = NSLocalizedString(category.nameKey ?? "", comment: "")
+            let localizedDescription = NSLocalizedString(category.descriptionKey ?? "", comment: "")
+            return localizedName.localizedCaseInsensitiveContains(searchText) ||
+                   localizedDescription.localizedCaseInsensitiveContains(searchText)
         }
     }
     
@@ -69,10 +71,10 @@ struct CategoryRowView: View {
                 .font(.title2)
             
             VStack(alignment: .leading) {
-                Text(category.name)
+                Text(LocalizedStringKey(category.nameKey ?? ""))
                     .font(.headline)
                 
-                Text(category.categoryDescription)
+                Text(LocalizedStringKey(category.descriptionKey ?? ""))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 
@@ -188,8 +190,8 @@ struct CategoryDetailView: View {
                     Text(LocalizedStringKey(category.type))
                 }
                 
-                if !category.categoryDescription.isEmpty {
-                    Text(category.categoryDescription)
+                if let descriptionKey = category.descriptionKey, !descriptionKey.isEmpty {
+                    Text(LocalizedStringKey(descriptionKey))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
@@ -208,6 +210,6 @@ struct CategoryDetailView: View {
                 }
             }
         }
-        .navigationTitle(category.name)
+        .navigationTitle(LocalizedStringKey(category.nameKey ?? ""))
     }
 } 
