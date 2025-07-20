@@ -16,11 +16,11 @@
         <relationship name="category" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ZikirCategory" inverseName="zikirs" inverseEntity="ZikirCategory"/>
     </entity>
     <entity name="ZikirCategory" representedClassName="ZikirCategory" syncable="YES">
-        <attribute name="categoryDescription" attributeType="String" defaultValueString=""/>
+        <attribute name="descriptionKey" attributeType="String" defaultValueString=""/>
         <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="icon" attributeType="String" defaultValueString=""/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="nameKey" attributeType="String" defaultValueString=""/>
         <attribute name="type" attributeType="String" defaultValueString="custom"/>
         <relationship name="zikirs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Zikir" inverseName="category" inverseEntity="Zikir"/>
     </entity>
